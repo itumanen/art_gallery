@@ -11,7 +11,10 @@ q: quit
 s: start, reinitialize the gallery. Expected: clicking points in the window designates vertices
 	for the gallery; the points are saved in the global vector. 
 e: end, signal that the last vertex has been clicked.
-g: guard, can only be used after 'e', can be used to update position of the guard. 
+	This will draw the edge between the first and last vertices of the gallery.
+g: guard, can only be used once 'e' has been entered. User can click on a new position of the 
+	guard after entering 'g' every time. 
+v: calculate visible area of the guard "manually." // TODO
 
 DATA STRUCTURES:
 
@@ -21,12 +24,13 @@ ALGORITHMS:
 
 TASKS/TODO PART 1:
 - Construct and render a polygon based on where the user clicks in the window
-	* Have user enter the number of vertices --> maximum number of clicks to form polygon
 - Draw a point to represent the guard, based on user input (clicking)
-	* Method to test if the guard is inside the polygon
+	* TODO: Method to test if the guard is inside the polygon
 		- Error messages
 		- Still prompt for point
 - Compute the visible area of this point within the polygon; the result should be another polygon
+	* TODO: automatically recompute area if guard is updated
+	* Check if initializations are valid
 - Triangulate the visible area polygon, in case area is not convex polygon
 - Method to test whether a polygon is "simple" (edges only intersect in vertices)
 

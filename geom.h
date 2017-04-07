@@ -20,10 +20,9 @@ typedef struct _segment2D {
 } segment2D;
 
 
-typedef struct _rect2D  {
-    point2D origin;
-    float width, height;
-} rect2D;
+typedef struct _tri2D  {
+    point2D a, b, c;
+} tri2D;
 
 
 typedef struct _polygon {
@@ -39,7 +38,8 @@ typedef struct _polygon {
 int signed_area2D(point2D a, point2D b, point2D c);
 bool collinear(point2D p, point2D q, point2D r);
 bool left (point2D a, point2D b, point2D c);
-
+bool reflex_angle(point2D a, point2D b, point2D c);
+vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point2D guard);
 
 
 // helper functions to operate on points and segments

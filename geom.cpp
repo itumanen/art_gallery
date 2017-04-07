@@ -30,7 +30,55 @@ bool left (point2D a, point2D b, point2D c) {
 }
 
 
+bool reflex_angle(point2D a, point2D b, point2D c) {
+	return(!left(a,b,c));
+}
 
+vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point2D guard) {
+
+	int size = vector.size();
+	vector.resize(size); // avoid unnecessary expansion when moving points around
+	// TODO rearrange the points
+
+	float radMax = 0;
+	point2D vertexMax; // point at max angle
+	bool trace_ray; // if intersection needs to be computed
+
+	for (int i = 0; i < gallery.size(); i++) {
+		// calculate angle
+		float angle;
+
+		if (angle < radMax) {
+			trace_ray = true;
+			continue;
+		}
+
+		// angle <= radMax
+		// compute intersection between ray first encountered edge of polygon
+		// add to vector of vertices before the vertex that updated the angle
+		if (trace_ray) {
+			
+			segment2D ray, edge; 
+			ray.start = guard;
+			ray.end = vertexMax;
+			edge.start = gallery[i];
+			edge.end = gallery[i-1];
+			
+			point2D intersection;
+			// intersection of linear equations - results in floats then cast to ints
+
+			vis.push_back(intersection);
+			trace_ray = false;
+		}
+
+		// update vertex of max angle
+		vertexMax = gallery[i]; 
+		vis.push_back(vertexMax);
+
+	}
+
+	return vis;
+}
 
 
 // HELPER FUNCTIONS

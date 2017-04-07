@@ -55,13 +55,17 @@ GLint fillmode = 0;
 void initialize_polygon(); 
 void print_polygon(vector<point2D> poly); 
 void print_guard();
-void check_initialization();
+bool initialized();
+bool valid_guard();
+bool guard_inside();
 
 // graphics
 void display(void);
 void keypress(unsigned char key, int x, int y);
 void mousepress(int button, int state, int x, int y);
 void timerfunc(); 
+
+
 
 
 
@@ -89,7 +93,6 @@ double mouse_y = -10;
 // if true, clicking the mouse saves points in polygon or as guard
 bool poly_init_mode = false; 
 bool guard_init_mode = false;
-bool initialized = false; 
 
 
 
@@ -164,7 +167,35 @@ void initialize_polygon() {
 
 }
 
+// flips initialization boolean – checking if vis area can be computed
+// vis area can only be computed if guard positin is valid and the 
+// gallery is a valid polygon (at least three points)
+// TODO: add a check for simple polygon 
+bool initialized() {
+	if(!valid_guard()) {
+		return false;
+	}
+	if (gallery.size() < 3) {
+		return false;
+	}
+	return false;
+}
 
+
+// guard is only valid if initialized (inside window)
+// and inside the gallery polygon 
+bool valid_guard() {
+	if (guard.x < 0 && guard.y < 0) {
+		return false;
+	}
+	// check if guard is inside
+	return (guard_inside());
+}
+
+// TODO
+bool guard_inside() {
+	return true;
+}
 
 
 
@@ -227,24 +258,35 @@ void draw_gallery() {
 		return; 
 	}
 
-	//set color 
-	glColor3fv(red);   
-	
+	// for simplicity
+	// vertices and edges drawn in separate for loops
+	for (int i = 0; i < gallery.size(); i++) {
+		glColor3fv(cyan); // for vertices
+		glPointSize(5);
+		glBegin(GL_POINTS);
+		glVertex2f(gallery[i].x, gallery[i].y); 
+		glEnd();
+	}
+	   
 	for (int i = 0; i < gallery.size() - 1; i++) {
+		glColor3fv(gray); // for edges
 		glBegin(GL_LINES);
-		glLineWidth(5);
+		glLineWidth(10);
 		glVertex2f(gallery[i].x, gallery[i].y); 
 		glVertex2f(gallery[i + 1].x, gallery[i + 1].y);
 		glEnd();	  
 	}
 
-	//render last segment between last point and forst point 
-	int last = gallery.size() - 1; 
+	if (!poly_init_mode) {		
+		//render last segment between last point and first point 
+		int last = gallery.size() - 1;
 
-	glBegin(GL_LINES);
-	glVertex2f(gallery[last].x, gallery[last].y); 
-	glVertex2f(gallery[0].x, gallery[0].y);
-	glEnd();
+		glColor3fv(gray); // for edges
+		glBegin(GL_LINES);
+		glVertex2f(gallery[last].x, gallery[last].y); 
+		glVertex2f(gallery[0].x, gallery[0].y);
+		glEnd();
+	}
 
 }
 
@@ -254,7 +296,7 @@ void draw_guard() {
 		return;
 	}
 	glColor3fv(blue);
-	glPointSize(10);
+	glPointSize(8);
 	glBegin(GL_POINTS);
 	glVertex2f(guard.x, guard.y);
 	glEnd();
@@ -315,13 +357,27 @@ void keypress(unsigned char key, int x, int y) {
 		  break; 
 		  
 		case 'e': 
+		  if(gallery.size() < 3) {
+		  	printf("Error: not enough vertices.\n");
+		  	break;
+		  }
 		  poly_init_mode = false; 
 		  glutPostRedisplay();
 		  break; 
 
-		case 'g':
+		case 'g': 	// guard only initialized after gallery
+		  if (poly_init_mode) {
+		  	break; 		
+		  }
 		  guard_init_mode = true;
+		  // compute visible area
 		  glutPostRedisplay();
+		  // guard_init_mode = false;
+		  break;
+
+		case 'v':
+		  // TODO calculate visible area
+		  // glutPostRedisplay();
 		  break;
 
 	}
