@@ -9,9 +9,12 @@ using namespace std;
 #ifndef __geom_h
 #define __geom_h
 
+#define EPSILON 0.00001
+#define PI 3.14159265
+
 
 typedef struct _point2d {
-  int x,y; 
+  float x,y; 
 } point2D;
 
 
@@ -24,6 +27,10 @@ typedef struct _tri2D  {
     point2D a, b, c;
 } tri2D;
 
+
+typedef struct _vertex {
+	float x, y, angle;
+} vertex;
 
 typedef struct _polygon {
 	int numPoints;
@@ -39,7 +46,7 @@ int signed_area2D(point2D a, point2D b, point2D c);
 bool collinear(point2D p, point2D q, point2D r);
 bool left (point2D a, point2D b, point2D c);
 bool reflex_angle(point2D a, point2D b, point2D c);
-vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point2D guard);
+vector<vertex> visible_area(vector<vertex> gallery, vector<vertex> vis, point2D guard);
 
 
 // helper functions to operate on points and segments

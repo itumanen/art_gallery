@@ -52,8 +52,7 @@ GLint fillmode = 0;
 // FORWARD DECLARATIONS
 
 // helper functions
-void initialize_polygon(); 
-void print_polygon(vector<point2D> poly); 
+void print_polygon(vector<vertex> poly); 
 void print_guard();
 bool initialized();
 bool valid_guard();
@@ -76,12 +75,9 @@ void timerfunc();
 // GLOBAL VARIABLES
 
 const int WINDOWSIZE = 750; 
-vector<point2D> gallery;
-vector<point2D> vis;
+vector<vertex> gallery;
+vector<vertex> vis;
 point2D guard = { -10, -10} ;
-
-// generic/testing polygon
-vector<point2D>  poly;
 
 
 // coordinates of last mouse click
@@ -144,29 +140,6 @@ int main(int argc, char** argv) {
 /* ****************************** */
 
 
-// INITIALIZE DEFAULT POLYGON AS MUSEUM GALLERY
-void initialize_polygon() {
-  
-  // clear the vector just in case
-  poly.clear(); 
-
-  int n = 10; //size of polygon 
-  double rad = 100; 
-  double step = 2 * M_PI / n;
-  point2D p; 
-
-  for (int i = 0; i < n; i++) {
-  	
-  	p.x = WINDOWSIZE/2 + rad * cos (i * step); 
-  	p.y = WINDOWSIZE/2 + rad * sin (i * step); 
-  	
-  	// insert the point in the vector of points
-  	poly.push_back(p); 
-
-  }
-
-}
-
 // flips initialization boolean – checking if vis area can be computed
 // vis area can only be computed if guard positin is valid and the 
 // gallery is a valid polygon (at least three points)
@@ -201,20 +174,20 @@ bool guard_inside() {
 
 /* PRINT FUNCTIONS */
 
-void print_polygon(vector<point2D> poly) {
+void print_polygon(vector<vertex> poly) {
 
 	for (unsigned int i = 0; i < poly.size() - 1; i++) {
-		printf("edge %d: [(%d,%d), (%d,%d)]\n", i, poly[i].x, poly[i].y, poly[i+1].x, poly[i+1].y);
+		printf("edge %d: [(%f,%f), (%f,%f)]\n", i, poly[i].x, poly[i].y, poly[i+1].x, poly[i+1].y);
   	}
 
 	//print last edge from last point to first point 
 	int last = poly.size() - 1;
-    printf("edge %d: [(%d,%d), (%d,%d)]\n", last, poly[last].x, poly[last].y, poly[0].x, poly[0].y);
+    printf("edge %d: [(%f,%f), (%f,%f)]\n", last, poly[last].x, poly[last].y, poly[0].x, poly[0].y);
 
 }
 
 void print_guard() {
-	printf("Guard: (%d, %d)\n", guard.x, guard.y);
+	printf("Guard: (%f, %f)\n", guard.x, guard.y);
 	fflush(stdout);
 }
 
@@ -393,13 +366,13 @@ void mousepress(int button, int state, int x, int y) {
 		mouse_y = WINDOWSIZE - y; // GLUT origin is upper left, need to flip y
 
 		if (poly_init_mode) {
-			printf("gallery vertex at (x = %d, y = %d)\n", (int)mouse_x, (int)mouse_y);
-		  	point2D p = { mouse_x, mouse_y }; 
+			printf("gallery vertex at (x = %f, y = %f)\n", (float)mouse_x, (float)mouse_y);
+		  	vertex p = { mouse_x, mouse_y }; 
 		  	gallery.push_back(p);
 		}
 
 		else if (guard_init_mode) {
-			printf("guard is at (x = %d, y = %d)\n", (int)mouse_x, (int)mouse_y);
+			printf("guard is at (x = %f, y = %f)\n", (float)mouse_x, (float)mouse_y);
 			guard.x = mouse_x;
 			guard.y = mouse_y;
 			guard_init_mode = false;

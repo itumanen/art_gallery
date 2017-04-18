@@ -34,21 +34,106 @@ bool reflex_angle(point2D a, point2D b, point2D c) {
 	return(!left(a,b,c));
 }
 
-vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point2D guard) {
 
-	int size = vector.size();
-	vector.resize(size); // avoid unnecessary expansion when moving points around
-	// TODO rearrange the points
+
+// compute radial angle of point relative to guard
+// atan computes angle in radians
+// if the vertex of the gallery is lower than the guard in the window
+// (x-value is smaller), then the radial angle is in [-180, 0]; to 
+// move all angles into the range [0, 360] we have to add 360 to all
+// negative angle values
+float radial_angle(vertex v, point2D guard) {
+	float angle = atan( ( float(v.y - guard.y) / float(v.x - guard.x)) );
+	angle = angle * 180 / PI; // convert to degrees
+	if (angle < 0) { 
+		angle += 360;
+	}
+	return angle;
+}
+
+
+// check ordering of points - if entered in CCW order, make sure everything
+// before startIndex is moved to the end of the vector
+// if the user entered the points in CW order, reverse the vector and then
+// move everything to one side of startIndex.
+// vector<vertex> reorder(vector<vertex> gallery, startIndex) {
+// 	int size = gallery.size();
+// 	gallery.resize(size); // avoid unnecessary expansion when moving points around
+// 	return gallery;
+// }
+
+
+
+bool ccw(int min_ang_index, int max_ang_index) {
+	if (!min_ang_index) { 	//starting index is 0
+		return true;
+	} else {
+		return (min_ang_index > max_ang_index);
+	}
+}
+
+
+// assumes that the vertex angle was set before visible was called
+bool visible(vertex v, float radMax) {
+	return (v.angle > radMax);
+}
+
+// returns the index of the vertex corresponding to the endpoint of the
+// edge that is being intersected by the ray
+// cusp = the would-be index of the cusp in vis (needs to be added after backtrack)
+int backtrack(vector<vertex> vis, int cusp, segment2D ray) {
+
+	float max_angle = vis[cusp].angle;
+	int index = cusp - 1;
+	while (vis[index].angle > max_angle && index > 0) {
+		index--;
+	}
+	return index; // TODO also update max_angle in visible method
+}
+
+
+
+
+vector<vertex> visible_area(vector<vertex> gallery, vector<vertex> vis, point2D guard) {
+
+	// compute the radial angles of all the vertices relative to the guard,
+	// keeping track of the vertices with the smallest and largest angles; 
+	// sweep starts and ends at these points
+	float min_angle = 360;
+	float max_angle = 0;
+	int min_ang_index = 0;
+	int max_ang_index = 0;
+	for (int i = 0; i < gallery.size(); i++) {
+		gallery[i].angle = radial_angle(gallery[i], guard);
+		if (gallery[i].angle < min_angle) {
+			min_angle = gallery[i].angle;
+			min_ang_index = i;
+		} else if (gallery[i].angle > max_angle) {
+			max_angle = gallery[i].angle;
+			max_ang_index = i;
+		}
+	}
+
+	// vertex with smallest radial angle (at an index i) is the starting point for the 
+	// radial/directional sweep. the sweep is performed in counter clockwise order - thus, 
+	// if the points were entered by the user in ccw order, then this last vertex should 
+	// be at index i-1. If this is not the case then we know that the points were entered 
+	// in clockwise order, and have to reverse the order of the points in order to compare
+	// the order in which they were entered to the radial order. 
+	if (ccw(min_ang_index, max_ang_index)) {
+		printf("COUNTER CLOCKWISE\n");
+	} else {
+		printf("CLOCKWISE\n");
+		// TODO rearrange the points
+	}
 
 	float radMax = 0;
-	point2D vertexMax; // point at max angle
+	int vertexMax; // index of vertex with max angle
 	bool trace_ray; // if intersection needs to be computed
 
 	for (int i = 0; i < gallery.size(); i++) {
-		// calculate angle
-		float angle;
 
-		if (angle < radMax) {
+		if (gallery[i].angle < radMax) {
 			trace_ray = true;
 			continue;
 		}
@@ -58,22 +143,22 @@ vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point
 		// add to vector of vertices before the vertex that updated the angle
 		if (trace_ray) {
 			
-			segment2D ray, edge; 
-			ray.start = guard;
-			ray.end = vertexMax;
-			edge.start = gallery[i];
-			edge.end = gallery[i-1];
+			// segment2D ray, edge; 
+			// ray.start = guard;
+			// ray.end = vertexMax;
+			// edge.start = gallery[i];
+			// edge.end = gallery[i-1];
 			
-			point2D intersection;
-			// intersection of linear equations - results in floats then cast to ints
+			// point2D intersection;
+			// // intersection of linear equations - results in floats then cast to ints
 
-			vis.push_back(intersection);
+			// vis.push_back(intersection);
 			trace_ray = false;
 		}
 
 		// update vertex of max angle
-		vertexMax = gallery[i]; 
-		vis.push_back(vertexMax);
+		vertexMax = i; 
+		vis.push_back(gallery[vertexMax]);
 
 	}
 
@@ -81,15 +166,19 @@ vector<point2D> visible_area(vector<point2D> gallery, vector<point2D> vis, point
 }
 
 
+
+
+
+
 // HELPER FUNCTIONS
 
 void printPoint(point2D p) {
-	printf("(%d, %d)\n", p.x, p.y);
+	printf("(%f, %f)\n", p.x, p.y);
 	fflush(stdout);
 }
 
 void printSegment(segment2D s) {
-	printf("start (%d, %d)  end (%d, %d)\n", s.start.x, s.start.y, s.end.x, s.end.y);
+	printf("start (%f, %f)  end (%f, %f)\n", s.start.x, s.start.y, s.end.x, s.end.y);
 	fflush(stdout);
 }
 
