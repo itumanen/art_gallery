@@ -45,7 +45,7 @@ GLfloat magenta[3] = {1.0, 0.0, 1.0};
 GLfloat cyan[3] = {0.0, 1.0, 1.0};
 
 GLint fillmode = 0;
-
+float transparency = 0.6;
 
 
 
@@ -102,10 +102,6 @@ bool guard_init_mode = false;
 /* 			MAIN FUNCTION 		  */
 /* ****************************** */
 int main(int argc, char** argv) {
-	
-	// compute polygon of visible area
-	// check if gallery not empty first
-	// and if guard has been initialized
 
 	// initialize GLUT
 	glutInit(&argc, argv);
@@ -125,7 +121,13 @@ int main(int argc, char** argv) {
 	
 	// here we can enable depth testing and double buffering and so on
 
-	
+	// compute polygon of visible area
+	// check if gallery not empty first
+	// and if guard has been initialized
+	if (initialized()) {
+		vis = visible_area(gallery, vis, guard);
+	}
+
 	// give control to event handler
 	glutMainLoop();
 	return 0;
@@ -145,13 +147,15 @@ int main(int argc, char** argv) {
 // gallery is a valid polygon (at least three points)
 // TODO: add a check for simple polygon 
 bool initialized() {
+	printf("testing if initialized\n");
 	if(!valid_guard()) {
+		printf("not valid guard\n");
 		return false;
 	}
-	if (gallery.size() < 3) {
+	if (gallery.size() < 3 && poly_init_mode) {
 		return false;
 	}
-	return false;
+	return true;
 }
 
 
@@ -276,7 +280,44 @@ void draw_guard() {
 
 }
 
+void draw_vis() {
+	if (vis.empty()) {
+		return;
+	}
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glColor4f(0.0, 0.3, 0.3, transparency);
+	// glPolygonMode(GL_BACK, GL_FILL);
+
+	for (int i = 1; i < vis.size(); i++) {
+		glBegin(GL_POLYGON);
+		glVertex2f(guard.x, guard.y);
+		glVertex2f(vis[i-1].x, vis[i-1].y);
+		glVertex2f(vis[i].x, vis[i].y);
+		glEnd();
+	}
+
+	// fill in last triangle
+	glBegin(GL_POLYGON);
+	glVertex2f(guard.x, guard.y);
+	glVertex2f(vis[vis.size() -1].x, vis[vis.size() -1].y);
+	glVertex2f(vis[0].x, vis[0].y);
+	glEnd();
+
+	// for testing
+	glColor3fv(red);
+	for (int i = 0; i < vis.size(); i++) {
+		glBegin(GL_POINTS);
+		glPointSize(5);
+		glVertex2f(vis[i].x, vis[i].y);
+		glEnd();
+	}
+
+	glEnd();
+}
 
 
 /* ****************************** */
@@ -301,7 +342,7 @@ void display(void) {
 
 
 	// DRAW POLYGONS, GALLERY AND VIS
-	// draw_polygon(poly); 
+	draw_vis();
 	draw_gallery();
 	draw_guard();
 
@@ -324,6 +365,7 @@ void keypress(unsigned char key, int x, int y) {
 		// re-initialize the polygon
 		case 's': 
 		  gallery.clear();
+		  vis.clear();
 		  mouse_x = mouse_y = 0; 
 		  poly_init_mode = true; 
 		  glutPostRedisplay();
@@ -343,14 +385,18 @@ void keypress(unsigned char key, int x, int y) {
 		  	break; 		
 		  }
 		  guard_init_mode = true;
+		  vis.clear();
 		  // compute visible area
 		  glutPostRedisplay();
 		  // guard_init_mode = false;
 		  break;
 
 		case 'v':
-		  // TODO calculate visible area
-		  // glutPostRedisplay();
+		  if (initialized()) {
+		  	vis.clear();
+		  	vis = visible_area(gallery, vis, guard);
+		  }
+		  glutPostRedisplay();
 		  break;
 
 	}
